@@ -565,7 +565,7 @@ body.cursor-hover .cursor-ring{width:56px;height:56px;opacity:.9}
           <a href="https://github.com/Showrovghoshroy/" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
-      <form class="form reveal d2" action="mailto:showrovghoshroy@gmail.com" method="post" enctype="text/plain" onsubmit="return handleForm(event)">
+      <form class="form reveal d2" id="contactForm" onsubmit="return handleForm(event)">
         <div class="form-row">
           <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" placeholder="Your name" required></div>
           <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" placeholder="you@company.com" required></div>
@@ -575,7 +575,7 @@ body.cursor-hover .cursor-ring{width:56px;height:56px;opacity:.9}
         <button class="btn btn-primary" type="submit">Send message
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
-        <span class="form-note">This opens your email app with the message pre-filled.</span>
+        <span class="form-note" id="formNote">I usually reply within a day.</span>
       </form>
     </div>
   </div>
@@ -646,13 +646,59 @@ const spy=new IntersectionObserver(entries=>{
 },{rootMargin:'-40% 0px -55% 0px'});
 sections.forEach(s=>spy.observe(s));
 
-// ------- contact form (mailto) -------
+// ------- contact form (EmailJS) -------
+const EMAILJS_PUBLIC_KEY='aT7XNkika4wBXUWdv';
+const EMAILJS_SERVICE_ID='service_oiapt7g';
+const EMAILJS_TEMPLATE_ID='template_3jxbalj';
+
+(function loadEmailJS(){
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+  s.onload=()=>emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
+  document.head.appendChild(s);
+})();
+
 function handleForm(e){
   e.preventDefault();
   const f=e.target;
-  const subject=encodeURIComponent('Project inquiry from '+f.name.value);
-  const body=encodeURIComponent(`Name: ${f.name.value}\nEmail: ${f.email.value}\nCompany: ${f.company.value||'—'}\n\n${f.message.value}`);
-  window.location.href=`mailto:showrovghoshroy@gmail.com?subject=${subject}&body=${body}`;
+  const btn=f.querySelector('button[type="submit"]');
+  const note=document.getElementById('formNote');
+  const params={
+    name:f.name.value,
+    email:f.email.value,
+    company:f.company.value||'—',
+    message:f.message.value,
+    from_name:f.name.value,
+    from_email:f.email.value,
+    reply_to:f.email.value,
+    title:'Portfolio contact from '+f.name.value
+  };
+  btn.disabled=true;
+  const btnHTML=btn.innerHTML;
+  btn.textContent='Sending…';
+  note.textContent='';
+  if(!window.emailjs){
+    // SDK blocked or offline: fall back to email app
+    const body=encodeURIComponent(`Name: ${params.name}\nEmail: ${params.email}\nCompany: ${params.company}\n\n${params.message}`);
+    window.location.href=`mailto:showrovghoshroy@gmail.com?subject=${encodeURIComponent(params.title)}&body=${body}`;
+    btn.disabled=false;btn.innerHTML=btnHTML;
+    return false;
+  }
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,params)
+    .then(()=>{
+      f.reset();
+      btn.innerHTML=btnHTML;
+      btn.disabled=false;
+      note.textContent='✓ Message sent — I usually reply within a day.';
+      note.style.color='#22c55e';
+    })
+    .catch(err=>{
+      console.error('EmailJS error:',err);
+      btn.innerHTML=btnHTML;
+      btn.disabled=false;
+      note.textContent='Something went wrong. Please email me directly at showrovghoshroy@gmail.com';
+      note.style.color='#ef4444';
+    });
   return false;
 }
 // ------- custom cursor (Portavia style) -------
