@@ -649,7 +649,7 @@ sections.forEach(s=>spy.observe(s));
 // ------- contact form (EmailJS) -------
 const EMAILJS_PUBLIC_KEY='aT7XNkika4wBXUWdv';
 const EMAILJS_SERVICE_ID='service_oiapt7g';
-const EMAILJS_TEMPLATE_ID='template_3jxbalj';
+const EMAILJS_TEMPLATE_ID='template_lq6fwse';
 
 (function loadEmailJS(){
   const s=document.createElement('script');
@@ -671,7 +671,7 @@ function handleForm(e){
     from_name:f.name.value,
     from_email:f.email.value,
     reply_to:f.email.value,
-    title:'Portfolio contact from '+f.name.value
+    title:'Portfolio contact from '+f.name.value+(f.company.value?' ('+f.company.value+')':'')
   };
   btn.disabled=true;
   const btnHTML=btn.innerHTML;
